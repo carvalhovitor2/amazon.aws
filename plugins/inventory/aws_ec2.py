@@ -571,6 +571,8 @@ class InventoryModule(AWSInventoryBase):
                 if isinstance(value, str):
                     hostname_dict[key] = re.sub(pattern, replace_pattern, value)
 
+        return hostnames_list
+
     def _get_all_hostnames(self, instance, hostnames):
         '''
             :param instance: an instance dict returned by boto3 ec2 describe_instances()
