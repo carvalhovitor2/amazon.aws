@@ -559,6 +559,18 @@ class InventoryModule(AWSInventoryBase):
         if hostname:
             return self._sanitize_hostname(hostname)
 
+    def _replace_env_vars(self, hostnames_list):
+        pattern = r'\$\{([^}]+)\}|\$([a-zA-Z_]+[a-zA-Z0-9_]*)'
+
+        def replace_pattern(matchobj):
+            var_name = matchobj.group(1) or matchobj.group(2)
+            return os.environ.get(var_name, '')
+
+        for hostname_dict in hostnames_list:
+            for key, value in hostname_dict.items():
+                if isinstance(value, str):
+                    hostname_dict[key] = re.sub(pattern, replace_pattern, value)
+
     def _get_all_hostnames(self, instance, hostnames):
         '''
             :param instance: an instance dict returned by boto3 ec2 describe_instances()
@@ -723,7 +735,8 @@ class InventoryModule(AWSInventoryBase):
         regions = self.get_option('regions')
         include_filters = self.build_include_filters()
         exclude_filters = self.get_option('exclude_filters')
-        hostnames = self.get_option('hostnames')
+        hostnames_template = self.get_option('hostnames')
+        hostnames = self._replace_env_vars(hostnames_template)
         strict_permissions = self.get_option('strict_permissions')
         allow_duplicated_hosts = self.get_option('allow_duplicated_hosts')
 
