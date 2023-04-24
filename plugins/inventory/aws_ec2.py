@@ -262,6 +262,7 @@ hostvars_suffix: '_ec2'
 """
 
 import re
+import os
 
 try:
     import botocore
